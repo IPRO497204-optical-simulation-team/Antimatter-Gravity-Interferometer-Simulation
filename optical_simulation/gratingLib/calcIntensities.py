@@ -2,7 +2,7 @@ import math
 
 import numpy
 
-from gratingLib.complexAmplitude import complexAmplitude
+from optical_simulation.gratingLib.complexAmplitude import complexAmplitude
 
 
 def calcIntensities(observingPositions, pointSourcePositions, xDistance, pointSourceAmplitudes, waveNumber):

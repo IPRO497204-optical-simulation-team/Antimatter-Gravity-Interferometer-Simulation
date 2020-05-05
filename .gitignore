@@ -2,9 +2,18 @@
 __pycache__/
 *.pyc
 
+# etc
+.Rhistory
 
 # JetBrains stuff
 .idea/
 
 # Output files
+image_output/
+
+.ipynb_checkpoints/
+
+mprofile_*.dat
+
+# Test work dir
 out/

@@ -3,57 +3,52 @@ import sys
 import time
 from multiprocessing import Queue
 
-
-def main():
-    pass
+from typing import Callable, List
 
 
-if __name__ == "__main__":
-    main()
+def run_multicore_test(cpu_cores: int = 8, number_calculations: int = 1000000, sleep_time: float = 5):
+    """
 
-
-def run(cores, vals, timer):
-    # Determine number of cores to use between 2 and 8, default is 8 if no args provided, or not {2<=number<8}
-    if int(cores) >= 2 and int(cores) <= 8:
-        numberCores = int(cores)
-    else:
-        numberCores = 8
-
-    # Determine amount of calculations to run with args entry 2, default is 1000000 if no args or val > 10000000000
-    if vals:
-        val = vals
-        if val > 10000000000:
-            val = 1000000
-    else:
-        val = 1000000  # Array size
-
-    # Determine sleep timer based on args, default is 5 seconds
-    if timer:
-        sleeptimer = float(timer)
-    else:
-        sleeptimer = 5  # increase this to allow child processes enough time to join parent
+    :param cpu_cores: Number of cores to use.
+    :param number_calculations: Number of calculations per core to run.
+    :param sleep_time: Time to sleep.
+    :return: TODO
+    """
 
     # Initialize arrays based on arguments provided
     q = Queue()  # used to save information generated within child process in separate core
     array1 = []
     array2 = []
 
-    if numberCores > 2:
+    if cpu_cores > 2:
         array3 = []
-    if numberCores > 3:
+    if cpu_cores > 3:
         array4 = []
-    if numberCores > 4:
+    if cpu_cores > 4:
         array5 = []
-    if numberCores > 5:
+    if cpu_cores > 5:
         array6 = []
-    if numberCores > 6:
+    if cpu_cores > 6:
         array7 = []
-    if numberCores > 7:
+    if cpu_cores > 7:
         array8 = []
 
     # Independent functions to fill arrays within separate cores with corresponding values
 
-    multiVal = int(val / numberCores)  # Splits val into [numberCores] parts, which will need to merge later
+    multiVal = int(
+        number_calculations / cpu_cores)  # Splits val into [numberCores] parts, which will need to merge later
+
+    def generate_core_fn(core_number, work_array: List[List[int]], multiVal) -> Callable[[int], None]:
+        """Generate a function for a core to run. TODO"""
+
+        def core_n(_):
+            for i in range(0, multiVal):
+                work_array.append(i)
+            pass
+
+        return core_n
+
+        pass
 
     def core1(n):
         for i in range(0, multiVal):
@@ -71,7 +66,7 @@ def run(cores, vals, timer):
         q.put(array3)
 
     def core4(n):
-        for i in range(0, int(val / numberCores)):
+        for i in range(0, int(number_calculations / cpu_cores)):
             array4.append(i + (multiVal * 3))
         q.put(array4)
 
@@ -100,33 +95,33 @@ def run(cores, vals, timer):
     for i in range(1):  # Scaled to create between 2 to 8 cores based on args provided
         t = multiprocessing.Process(target=core1, args=(i,))
         t2 = multiprocessing.Process(target=core2, args=(i,))
-        if numberCores > 2:
+        if cpu_cores > 2:
             t3 = multiprocessing.Process(target=core3, args=(i,))
-        if numberCores > 3:
+        if cpu_cores > 3:
             t4 = multiprocessing.Process(target=core4, args=(i,))
-        if numberCores > 4:
+        if cpu_cores > 4:
             t5 = multiprocessing.Process(target=core5, args=(i,))
-        if numberCores > 5:
+        if cpu_cores > 5:
             t6 = multiprocessing.Process(target=core6, args=(i,))
-        if numberCores > 6:
+        if cpu_cores > 6:
             t7 = multiprocessing.Process(target=core7, args=(i,))
-        if numberCores > 7:
+        if cpu_cores > 7:
             t8 = multiprocessing.Process(target=core8, args=(i,))
 
         # 'daemon = true' stops the parent process from having to wait for child processes to end before terminating.
         t.daemon = True
         t2.daemon = True
-        if numberCores > 2:
+        if cpu_cores > 2:
             t3.daemon = True
-        if numberCores > 3:
+        if cpu_cores > 3:
             t4.daemon = True
-        if numberCores > 4:
+        if cpu_cores > 4:
             t5.daemon = True
-        if numberCores > 5:
+        if cpu_cores > 5:
             t6.daemon = True
-        if numberCores > 6:
+        if cpu_cores > 6:
             t7.daemon = True
-        if numberCores > 7:
+        if cpu_cores > 7:
             t8.daemon = True
 
         # START TIMER, run processes
@@ -134,22 +129,23 @@ def run(cores, vals, timer):
 
         t.start()  # start processes
         t2.start()
-        if numberCores > 2:
+        if cpu_cores > 2:
             t3.start()
-        if numberCores > 3:
+        if cpu_cores > 3:
             t4.start()
-        if numberCores > 4:
+        if cpu_cores > 4:
             t5.start()
-        if numberCores > 5:
+        if cpu_cores > 5:
             t6.start()
-        if numberCores > 6:
+        if cpu_cores > 6:
             t7.start()
-        if numberCores > 7:
+        if cpu_cores > 7:
             t8.start()
 
     mylist = []  # Used to retrieve values from queue sequentially
 
-    time.sleep(sleeptimer)
+    print("Sleeping for {} seconds.".format(sleep_time))
+    time.sleep(sleep_time)  # FIXME: This is a race condition!
 
     # Get objects in queue
     if q.empty():
@@ -160,22 +156,22 @@ def run(cores, vals, timer):
 
     # Merge objects from queue into a single array
     mergedArray = []
-    for n in range(0, numberCores):
+    for n in range(0, cpu_cores):
         mergedArray = mergedArray + q.get()
 
     # TOTAL operating time of split loops
     # print("\nTotal time multi:")
-    multiTime = (time.time() - start) - sleeptimer
+    multiTime = (time.time() - start) - sleep_time
     # print(multiTime)
 
     # Compare with making a single array on one core
     array = []
     newstart = time.time()
-    for j in range(0, val):
+    for j in range(0, number_calculations):
         array.append(j)
-    time.sleep(sleeptimer)
+    time.sleep(sleep_time)
     # print("\nTotal time single: ")
-    singleTime = (time.time() - newstart) - sleeptimer
+    singleTime = (time.time() - newstart) - sleep_time
     # print(singleTime)
 
     # print("\nEfficiency ratio:\n",(multiTime/singleTime), "\n")

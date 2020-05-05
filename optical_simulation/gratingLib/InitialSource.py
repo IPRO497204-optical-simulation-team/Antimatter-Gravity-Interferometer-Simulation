@@ -4,9 +4,11 @@ Created on Sun Oct 29 21:39:05 2017
 
 @author: joest
 """
+from typing import List, Tuple
+
 import numpy as np
 
-from gratingLib.complexAmplitude import complexAmplitude
+from optical_simulation.gratingLib.complexAmplitude import complexAmplitude
 
 
 class InitialSource:
@@ -14,13 +16,17 @@ class InitialSource:
     a class that represents the initial source(s) before waves enter the grating system
     """
 
-    def __init__(self, xPosition, yPosition, waveType, initialAmplitude):
+    def __init__(self, xPosition: float, yPosition: float, waveType: str, initialAmplitude: float):
         self.xPosition = xPosition  # expand this to include collections of point sources? let xPosition and yPosition be arrays?
         self.yPosition = yPosition
         self.waveType = waveType
         self.initialAmplitude = initialAmplitude
 
-    def propogate(self, gratingX, pointSourceYs, waveNum, normalize=False):
+    def propogate(self,
+                  gratingX: float,
+                  pointSourceYs: List[float],
+                  waveNum: float,
+                  normalize=False) -> Tuple[np.ndarray, np.ndarray]:
         """
         will generate an array of amplitudes for each pointSourceY in pointSourceYs.
         """
